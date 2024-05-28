@@ -88,8 +88,6 @@ As principais vantagens do projeto incluem a automação do processo de tratamen
 
 Links:
 
-Aqui estão os links em Markdown:
-
 - [Vídeo de apresentação no YouTube](https://www.youtube.com/watch?v=fEfWyhlYuFs)
 - [Wokwi Publisher](https://wokwi.com/projects/398954874165918721)
 - [Wokwi Subscriber](https://wokwi.com/projects/399073607167111169)
