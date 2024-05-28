@@ -20,6 +20,7 @@ String TopicoPrefixo = "TESTMACK1165744"; // prefixo do topico
 String Topico_01 = TopicoPrefixo+"/Temperatura"; // nome do topico 01
 String Topico_02 = TopicoPrefixo+"/Umidade"; // nome do topico 02
 String Topico_03 = TopicoPrefixo+"/Peso"; // nome do topico 03
+String Topico_04 = TopicoPrefixo+"/Acionar"; 
 
 // Variaveis globais e objetos
 DHTesp dhtSensor; // instancia o objeto dhtSensor a partir da classa DHTesp
@@ -34,7 +35,16 @@ float calibration_factor = 42130; // fator de calibração para teste inicial
 
 // Este prototipo de funcao deve estar sempre presente
 void onConnectionEstablished() {
-  // Função chamada quando a conexão MQTT é estabelecida
+  clienteMQTT.subscribe(Topico_04.c_str(), [](const String & topic, const String & payload) {
+    Serial.println("Mensagem recebida no tópico: " + topic + ", payload: " + payload);
+    if (payload == "true") {
+      digitalWrite(RELAY_PIN, HIGH);
+    } else if (payload == "false") {
+      digitalWrite(RELAY_PIN, LOW);
+    }
+  });
+
+  clienteMQTT.publish(Topico_04.c_str(), "false", true); // Publicar o valor inicial false no tópico /Acionar
 }
 
 void enviarDados() {
@@ -74,16 +84,6 @@ void enviarDados() {
     // Publicar dados de peso no MQTT
     clienteMQTT.publish(Topico_03, String(weight * 100, 2) + " kg");
   }
-
-  // Ativar relé se responder à condição
-  if (temp_umid.humidity >= 10) {
-  // if (temp_umid.temperature >= 50 && (weight * 100) >= 10) {
-    digitalWrite(RELAY_PIN, HIGH);
-    Serial.println("Relé ativado");
-  } else {
-    digitalWrite(RELAY_PIN, LOW);
-    Serial.println("Relé desativado");
-  }
 }
 
 void setup() {
@@ -91,7 +91,8 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Inicializando...");
 
-  pinMode(BOTAO_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+  digitalWrite(RELAY_PIN, LOW); // Inicialmente desativa o relé
 
   // Inicializa o sensor de temperatura e umidade
   dhtSensor.setup(DHT_PIN, DHTesp::DHT22);
@@ -107,29 +108,12 @@ void setup() {
   // Configurações do cliente MQTT
   clienteMQTT.enableDebuggingMessages();
   Serial.println("Cliente MQTT configurado");
-
-  // Configura o pino do relé como saída
-  pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, LOW); // Inicialmente desativa o relé
-
-  Serial.println("HX711 - Calibracao da Balanca");
-  Serial.println("Remova o peso da balanca");
-  Serial.println("Depois que as leituras começarem, coloque um peso conhecido sobre a Balanca");
-  Serial.println("Pressione a,s,d,f para aumentar Fator de Calibração por 10,100,1000,10000 respectivamente");
-  Serial.println("Pressione z,x,c,v para diminuir Fator de Calibração por 10,100,1000,10000 respectivamente");
-  Serial.println("Após leitura correta do peso, pressione t para TARA(zerar)");
 }
 
 void loop() {
   // Loop principal
   clienteMQTT.loop(); // Função necessária para manter a conexão com o broker MQTT ativa e coletar as mensagens recebidas
   enviarDados(); // Publica os dados no broker MQTT
-
-  if (digitalRead(BOTAO_PIN) == HIGH) {
-    digitalWrite(RELAY_PIN, HIGH); // Ativar o relé
-    Serial.println("Botão pressionado - Relé ativado");
-    delay(1000); // Delay para evitar detecção múltipla de pressionamento
-  }
 
   // Verifica o status da conexão WiFi e MQTT
   if (clienteMQTT.isWifiConnected()) {

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "author": "Rodrigo Garcia",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 9.6, "left": -4.76, "attrs": {} },
+    {
+      "type": "wokwi-relay-module",
+      "id": "relay1",
+      "top": -64.2,
+      "left": -198,
+      "rotate": 270,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -10.4,
+      "left": -85,
+      "rotate": 270,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": -52.8,
+      "left": -77.35,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    },
+    { "type": "wokwi-vcc", "id": "vcc1", "top": -191.24, "left": -124.8, "attrs": {} }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    [ "r1:2", "led1:A", "red", [ "h0" ] ],
+    [ "relay1:IN", "esp:13", "red", [ "v0" ] ],
+    [ "relay1:VCC", "esp:3V3", "red", [ "v0" ] ],
+    [ "relay1:GND", "esp:GND.1", "black", [ "v0" ] ],
+    [ "relay1:NO", "r1:1", "red", [ "v-30", "h75" ] ],
+    [ "vcc1:VCC", "relay1:COM", "red", [ "v28.8", "h-19.2", "v49.2" ] ],
+    [ "led1:C", "esp:GND.1", "black", [ "h9.6", "v143.6" ] ]
+  ],
+  "dependencies": {}
+}
